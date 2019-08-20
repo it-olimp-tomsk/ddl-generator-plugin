@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>plugins-root</artifactId>
+        <groupId>com.betolimp.plugins</groupId>
+        <version>1.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>sample</artifactId>
+    <properties>
+        <migrationsPath>${basedir}/src/main/resources/db/migration/</migrationsPath>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.4.1.Final</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+
+        <plugin>
+            <groupId>com.betolimp.plugins</groupId>
+            <artifactId>ddl-generator</artifactId>
+            <version>1.1-SNAPSHOT</version>
+            <configuration>
+                <migrationsPath>${migrationsPath}</migrationsPath>
+            </configuration>
+        </plugin>
+
+        </plugins>
+    </build>
+
+</project>
