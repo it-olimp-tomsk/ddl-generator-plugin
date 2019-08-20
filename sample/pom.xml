@@ -5,12 +5,14 @@
     <parent>
         <artifactId>plugins-root</artifactId>
         <groupId>com.betolimp.plugins</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sample</artifactId>
     <properties>
         <migrationsPath>${basedir}/src/main/resources/db/migration/</migrationsPath>
+        <outputPath>${basedir}/src/main/resources/db/migration/</outputPath>
+        <entitiesPath>com.betolimp.sample.entity</entitiesPath>
     </properties>
     <dependencies>
         <dependency>
@@ -22,16 +24,16 @@
 
     <build>
         <plugins>
-
-        <plugin>
-            <groupId>com.betolimp.plugins</groupId>
-            <artifactId>ddl-generator</artifactId>
-            <version>1.1-SNAPSHOT</version>
-            <configuration>
-                <migrationsPath>${migrationsPath}</migrationsPath>
-            </configuration>
-        </plugin>
-
+            <plugin>
+                <groupId>com.betolimp.plugins</groupId>
+                <artifactId>ddl-generator</artifactId>
+                <version>1.3-SNAPSHOT</version>
+                <configuration>
+                    <migrationsPath>${migrationsPath}</migrationsPath>
+                    <outputPath>${outputPath}</outputPath>
+                    <entitiesPath>${entitiesPath}</entitiesPath>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
