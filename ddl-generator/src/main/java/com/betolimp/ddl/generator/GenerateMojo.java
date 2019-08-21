@@ -1,20 +1,26 @@
 package com.betolimp.ddl.generator;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 import org.flywaydb.core.Flyway;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
+import org.reflections.Reflections;
 
+import javax.persistence.Entity;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
@@ -33,11 +39,24 @@ public class GenerateMojo extends AbstractMojo {
     private String migrationsPath;
 
     @Parameter(property = "outputPath")
-    private String outputPath;
+    private File outputPath;
 
     @Parameter(property = "entities")
     private List<String> entitiesPath;
 
+    @Parameter(defaultValue = "${project}", readonly = true)
+    private MavenProject project;
+
+    @Parameter(defaultValue = "${plugin}", readonly = true)
+    private PluginDescriptor descriptor;
+
+    private URL mapPathToURL(String path) {
+        try {
+            return Paths.get(path).toUri().toURL();
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
 
     public void execute(){
@@ -45,6 +64,16 @@ public class GenerateMojo extends AbstractMojo {
         getLog().info("************************************************************************* " + outputPath);
         getLog().info("************************************************************************* " + entitiesPath);
 
+        List<String> compileSourceRoots = project.getCompileSourceRoots();
+        compileSourceRoots.stream().map(this::mapPathToURL).forEach(url -> descriptor.getClassRealm().addURL(url));
+
+
+
+        try {
+            project.getCompileClasspathElements().stream().map(this::mapPathToURL).forEach(url -> descriptor.getClassRealm().addURL(url));
+        } catch (DependencyResolutionRequiredException e) {
+            throw new IllegalStateException(e);
+        }
         EmbeddedPostgres embeddedPostgres = null;
         Connection connection = null;
         try {
@@ -67,7 +96,6 @@ public class GenerateMojo extends AbstractMojo {
             statement.execute("select * from champs");
 
             getLog().info("@@@ " + statement.getResultSet().next() + " " + statement.getResultSet().getString("name"));
-
             Map<String, String> settings = new HashMap<>();
             settings.put("hibernate.connection.driver_class", "org.postgresql.Driver");
             settings.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
@@ -86,15 +114,21 @@ public class GenerateMojo extends AbstractMojo {
                 getLog().info("!!!!!!!!!!!!! " + packageName);
                 listClassNamesInPackage(packageName).forEach(metadata::addAnnotatedClassName);
                 metadata.addPackage(packageName);
-            }*/
+            }
+*/
 
-            SchemaExport schemaExport = new SchemaExport();
-            schemaExport.setHaltOnError(true);
-            schemaExport.setFormat(true);
-            schemaExport.setDelimiter(";");
-            schemaExport.setOutputFile(outputPath+"/someSql.sql");
-            schemaExport.execute(EnumSet.of(TargetType.SCRIPT), SchemaExport.Action.CREATE, metadata.buildMetadata());
+            new Reflections(entitiesPath)
+                    .getTypesAnnotatedWith(Entity.class)
+                    .forEach(metadata::addAnnotatedClass);
 
+            //STDOUT will export to output window, but other `TargetType` values are available to export to file or to the db.
+            EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.SCRIPT);
+            SchemaExport export = new SchemaExport();
+            export.setHaltOnError(true);
+            export.setFormat(true);
+            export.setDelimiter(";");
+            export.setOutputFile(outputPath+"/example.sql");
+            export.execute(targetTypes, SchemaExport.Action.BOTH, metadata.buildMetadata());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -112,7 +146,27 @@ public class GenerateMojo extends AbstractMojo {
 
     }
 
+    static void getDDL(String packageName, String propertiesFile) throws IOException {
 
+        MetadataSources metadata = new MetadataSources(
+                new StandardServiceRegistryBuilder()
+                        .loadProperties(propertiesFile)
+                        .build());
+
+        new Reflections(packageName)
+                .getTypesAnnotatedWith(Entity.class)
+                .forEach(metadata::addAnnotatedClass);
+
+        //STDOUT will export to output window, but other `TargetType` values are available to export to file or to the db.
+        EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.SCRIPT);
+
+        SchemaExport export = new SchemaExport();
+
+        export.setDelimiter(";");
+        export.setFormat(true);
+
+        export.createOnly(targetTypes, metadata.buildMetadata());
+    }
 
     private static List<String> listClassNamesInPackage(final String packageName) throws Exception {
         final List<String> classes = new ArrayList<>();
