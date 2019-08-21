@@ -19,6 +19,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
@@ -44,11 +46,13 @@ public class GenerateMojo extends AbstractMojo {
         getLog().info("************************************************************************* " + entitiesPath);
 
         EmbeddedPostgres embeddedPostgres = null;
+        Connection connection = null;
         try {
             embeddedPostgres = EmbeddedPostgres.builder()
                     .setPort(EMBEDDED_POSTGRES_PORT).start();
             DataSource dataSource = embeddedPostgres.getPostgresDatabase();
-            String dbUrl = dataSource.getConnection().getMetaData().getURL();
+            connection = dataSource.getConnection();
+            String dbUrl = connection.getMetaData().getURL();
             getLog().info(dbUrl);
 
             Flyway flyway = new Flyway();
@@ -65,36 +69,50 @@ public class GenerateMojo extends AbstractMojo {
             getLog().info("@@@ " + statement.getResultSet().next() + " " + statement.getResultSet().getString("name"));
 
             Map<String, String> settings = new HashMap<>();
-            settings.put("connection.driver_class", "com.mysql.jdbc.Driver");
-            settings.put("dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
+            settings.put("hibernate.connection.driver_class", "org.postgresql.Driver");
+            settings.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
             settings.put("hibernate.connection.url","" + dbUrl + "?useSSL=false");
             settings.put("hibernate.connection.username", "postgres");
             settings.put("hibernate.connection.password", "postgres");
-            settings.put("hibernate.hbm2ddl.auto", "create");
-            settings.put("show_sql", "true");
+            settings.put("hibernate.hbm2ddl.auto", "update");
+            settings.put("hibernate.show_sql", "true");
 
             MetadataSources metadata = new MetadataSources(
                     new StandardServiceRegistryBuilder()
                             .applySettings(settings)
                             .build());
 
-            for (String packageName : entitiesPath) {
+           /* for (String packageName : entitiesPath) {
+                getLog().info("!!!!!!!!!!!!! " + packageName);
                 listClassNamesInPackage(packageName).forEach(metadata::addAnnotatedClassName);
                 metadata.addPackage(packageName);
-            }
+            }*/
 
             SchemaExport schemaExport = new SchemaExport();
             schemaExport.setHaltOnError(true);
             schemaExport.setFormat(true);
             schemaExport.setDelimiter(";");
             schemaExport.setOutputFile(outputPath+"/someSql.sql");
-            schemaExport.execute(EnumSet.of(TargetType.SCRIPT), SchemaExport.Action.NONE, metadata.buildMetadata());
+            schemaExport.execute(EnumSet.of(TargetType.SCRIPT), SchemaExport.Action.CREATE, metadata.buildMetadata());
 
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+                if (embeddedPostgres != null) {
+                    embeddedPostgres.close();
+                }
+            } catch (SQLException | IOException e) {
+                e.printStackTrace();
+            }
         }
 
     }
+
+
 
     private static List<String> listClassNamesInPackage(final String packageName) throws Exception {
         final List<String> classes = new ArrayList<>();
@@ -124,27 +142,10 @@ public class GenerateMojo extends AbstractMojo {
     }
 
 
-    public String getMigrationsPath() {
-        return migrationsPath;
-    }
-
-    public void setMigrationsPath(String migrationsPath) {
-        this.migrationsPath = migrationsPath;
-    }
-
-    public String getOutputPath() {
-        return outputPath;
-    }
-
-    public void setOutputPath(String outputPath) {
-        this.outputPath = outputPath;
-    }
 
     public List<String> getEntitiesPath() {
         return entitiesPath;
     }
 
-    public void setEntitiesPath(List<String> entitiesPath) {
-        this.entitiesPath = entitiesPath;
-    }
+
 }

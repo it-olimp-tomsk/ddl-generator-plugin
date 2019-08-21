@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class Champs {
+public class ChampsTest {
     @Id
     private Long id;
     private Integer sport_id;
