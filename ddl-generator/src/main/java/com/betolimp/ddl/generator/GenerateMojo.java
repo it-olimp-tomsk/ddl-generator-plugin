@@ -21,14 +21,15 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class GenerateMojo extends AbstractMojo {
@@ -58,16 +59,10 @@ public class GenerateMojo extends AbstractMojo {
         }
     }
 
-
     public void execute(){
-        getLog().info("************************************************************************* " + migrationsPath);
-        getLog().info("************************************************************************* " + outputPath);
-        getLog().info("************************************************************************* " + entitiesPath);
 
         List<String> compileSourceRoots = project.getCompileSourceRoots();
         compileSourceRoots.stream().map(this::mapPathToURL).forEach(url -> descriptor.getClassRealm().addURL(url));
-
-
 
         try {
             project.getCompileClasspathElements().stream().map(this::mapPathToURL).forEach(url -> descriptor.getClassRealm().addURL(url));
@@ -96,7 +91,9 @@ public class GenerateMojo extends AbstractMojo {
             statement.execute("select * from champs");
 
             getLog().info("@@@ " + statement.getResultSet().next() + " " + statement.getResultSet().getString("name"));
+
             Map<String, String> settings = new HashMap<>();
+
             settings.put("hibernate.connection.driver_class", "org.postgresql.Driver");
             settings.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQL95Dialect");
             settings.put("hibernate.connection.url","" + dbUrl + "?useSSL=false");
@@ -110,18 +107,10 @@ public class GenerateMojo extends AbstractMojo {
                             .applySettings(settings)
                             .build());
 
-           /* for (String packageName : entitiesPath) {
-                getLog().info("!!!!!!!!!!!!! " + packageName);
-                listClassNamesInPackage(packageName).forEach(metadata::addAnnotatedClassName);
-                metadata.addPackage(packageName);
-            }
-*/
-
             new Reflections(entitiesPath)
                     .getTypesAnnotatedWith(Entity.class)
                     .forEach(metadata::addAnnotatedClass);
 
-            //STDOUT will export to output window, but other `TargetType` values are available to export to file or to the db.
             EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.SCRIPT);
             SchemaExport export = new SchemaExport();
             export.setHaltOnError(true);
@@ -129,6 +118,7 @@ public class GenerateMojo extends AbstractMojo {
             export.setDelimiter(";");
             export.setOutputFile(outputPath+"/example.sql");
             export.execute(targetTypes, SchemaExport.Action.BOTH, metadata.buildMetadata());
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -143,63 +133,10 @@ public class GenerateMojo extends AbstractMojo {
                 e.printStackTrace();
             }
         }
-
     }
-
-    static void getDDL(String packageName, String propertiesFile) throws IOException {
-
-        MetadataSources metadata = new MetadataSources(
-                new StandardServiceRegistryBuilder()
-                        .loadProperties(propertiesFile)
-                        .build());
-
-        new Reflections(packageName)
-                .getTypesAnnotatedWith(Entity.class)
-                .forEach(metadata::addAnnotatedClass);
-
-        //STDOUT will export to output window, but other `TargetType` values are available to export to file or to the db.
-        EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.SCRIPT);
-
-        SchemaExport export = new SchemaExport();
-
-        export.setDelimiter(";");
-        export.setFormat(true);
-
-        export.createOnly(targetTypes, metadata.buildMetadata());
-    }
-
-    private static List<String> listClassNamesInPackage(final String packageName) throws Exception {
-        final List<String> classes = new ArrayList<>();
-        Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(packageName.replace('.', File.separatorChar));
-        if (!resources.hasMoreElements()) {
-            throw new IllegalStateException("No package found: " + packageName);
-        }
-        final PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:*.class");
-        while (resources.hasMoreElements()) {
-            final URL resource = resources.nextElement();
-            Files.walkFileTree(Paths.get(resource.toURI()), new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-                    if (pathMatcher.matches(path.getFileName())) {
-                        try {
-                            String className = Paths.get(resource.toURI()).relativize(path).toString().replace(File.separatorChar, '.');
-                            classes.add(packageName + '.' + className.substring(0, className.length() - 6));
-                        } catch (URISyntaxException e) {
-                            throw new IllegalStateException(e);
-                        }
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }
-        return classes;
-    }
-
-
 
     public List<String> getEntitiesPath() {
         return entitiesPath;
     }
-
 
 }
