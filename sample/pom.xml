@@ -31,7 +31,7 @@
                 <configuration>
                     <migrationsPath>${migrationsPath}</migrationsPath>
                     <outputPath>${outputPath}</outputPath>
-                    <entitiesPath>com.betolimp.sample.model</entitiesPath>
+                    <entityPackages>com.betolimp.sample.model</entityPackages>
                 </configuration>
             </plugin>
         </plugins>
