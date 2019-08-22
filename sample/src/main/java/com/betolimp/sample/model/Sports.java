@@ -1,9 +1,6 @@
 package com.betolimp.sample.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Sports {
@@ -12,10 +9,13 @@ public class Sports {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    private String name;
+    private String camelCase;
+    private String cmaelCaseOne;
+    private String cmaelCaseTwo;
+    private String cmaelCaseThree;
+    @Column(length = 111)
+    private String cmaelCaseFour;
 
-    private String test;
 
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private int counter;
+
 }

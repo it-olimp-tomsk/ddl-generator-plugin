@@ -1,14 +1,10 @@
 package com.betolimp.sample.model;
 
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name="sports")
-@Cacheable
-@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@Table(name="sportsss")
 public class SportEntity {
 
     @Id

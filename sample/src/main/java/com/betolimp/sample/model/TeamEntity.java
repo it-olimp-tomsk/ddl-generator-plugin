@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(
         name="teams",
         uniqueConstraints=
-        @UniqueConstraint(columnNames = {"sport_id", "name"})
+        @UniqueConstraint(columnNames = {"sport_id", "name"}, name = "testConstr")
 )
 public class TeamEntity {
 
@@ -20,6 +20,7 @@ public class TeamEntity {
     private SportEntity sport;
 
     private String name;
+    @Column(length = 111)
     private String testSport;
 
 

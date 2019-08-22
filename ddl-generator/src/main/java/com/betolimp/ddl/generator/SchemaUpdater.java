@@ -2,6 +2,7 @@ package com.betolimp.ddl.generator;
 
 import com.opentable.db.postgres.embedded.EmbeddedPostgres;
 import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.boot.spi.MetadataImplementor;
@@ -47,13 +48,15 @@ public class SchemaUpdater {
                     .build();
 
             MetadataSources sources = new MetadataSources(standardRegistry);
+            PhysicalNamingStrategy physicalNamingStrategy = new CustomPhysicalNamingStrategy();
+            sources.getMetadataBuilder().applyPhysicalNamingStrategy(physicalNamingStrategy);
 
             new Reflections(schemaSettings.getEntityPackages())
                     .getTypesAnnotatedWith(Entity.class)
                     .forEach(sources::addAnnotatedClass);
 
             MetadataImplementor metadata = (MetadataImplementor) sources
-                    .getMetadataBuilder()
+                    .getMetadataBuilder().applyPhysicalNamingStrategy(new CustomPhysicalNamingStrategy())
                     .build();
 
             EnumSet<TargetType> targetTypes = EnumSet.of(TargetType.SCRIPT);

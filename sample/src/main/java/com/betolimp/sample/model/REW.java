@@ -10,6 +10,8 @@ public class REW {
     @SequenceGenerator(name="REW_generator", sequenceName="REW_id_seq", allocationSize = 0)
     int id;
 
-    private String sdkgsdg;
+    @Column(length = 44)
+    private String asdascas;
+
 
 }
