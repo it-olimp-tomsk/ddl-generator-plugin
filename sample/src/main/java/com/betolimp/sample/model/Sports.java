@@ -6,12 +6,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class ChampsTest {
+public class Sports {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-    private Integer sport_id;
+    private int id;
+
     private String name;
 
+    private String test;
+
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int counter;
 }
