@@ -24,7 +24,7 @@ public class FileResolver {
                     } else {
                         return 0;
                     }
-                }).orElse(0);FIX: Camel case -> Snake case in migrations
+                }).orElse(0);
 
         return migrationDir.toPath().resolve("V" + ++fileIndex + "__updatedSchema.sql").toFile();
     }
