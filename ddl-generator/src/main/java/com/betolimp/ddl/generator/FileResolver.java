@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class FileResolver {
 
     private final static Pattern FILENAME_PATTERN = Pattern.compile("V([0-9]+)__.+\\.sql");
-    private final static Pattern SCHEMA_FILENAME_PATTERN = Pattern.compile("V([0-9]+)__updatedShema.*\\.sql");
+    private final static Pattern SCHEMA_FILENAME_PATTERN = Pattern.compile("V([0-9]+)__updatedSchema.*\\.sql");
 
     static File resolveNextMigrationFile(File migrationDir) {
         Optional<Path> lastFile = resolveExistingMigrations(migrationDir, true, false)
@@ -24,12 +24,12 @@ public class FileResolver {
                     } else {
                         return 0;
                     }
-                }).orElse(0);
+                }).orElse(0);FIX: Camel case -> Snake case in migrations
 
         return migrationDir.toPath().resolve("V" + ++fileIndex + "__updatedSchema.sql").toFile();
     }
 
-    static List<Path> resolveExistingMigrations(File migrationsDir, boolean reversed, boolean onlySchemaMigrations) {
+    private static List<Path> resolveExistingMigrations(File migrationsDir, boolean reversed, boolean onlySchemaMigrations) {
         if (!migrationsDir.exists()) {
             migrationsDir.mkdirs();
         }
