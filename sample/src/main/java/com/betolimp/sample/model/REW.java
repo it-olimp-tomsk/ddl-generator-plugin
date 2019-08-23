@@ -13,5 +13,9 @@ public class REW {
     @Column(length = 44)
     private String asdascas;
 
+    private String camelCaseQwerty;
+
+    private String camelCaseQwertySDSDFfFDShkJhjk;
+
 
 }
