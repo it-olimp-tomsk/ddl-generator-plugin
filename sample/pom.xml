@@ -5,7 +5,7 @@
     <parent>
         <artifactId>plugins-root</artifactId>
         <groupId>com.betolimp.plugins</groupId>
-        <version>1.3-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sample</artifactId>
@@ -27,7 +27,7 @@
             <plugin>
                 <groupId>com.betolimp.plugins</groupId>
                 <artifactId>ddl-generator</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.4-SNAPSHOT</version>
                 <configuration>
                     <migrationsPath>${migrationsPath}</migrationsPath>
                     <outputPath>${outputPath}</outputPath>
