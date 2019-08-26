@@ -1,17 +1,20 @@
 package com.betolimp.ddl.generator;
 
-import com.opentable.db.postgres.embedded.EmbeddedPostgres;
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.flywaydb.core.Flyway;
+import org.apache.maven.project.MavenProject;
 
-import javax.sql.DataSource;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class GenerateMojo extends AbstractMojo {
@@ -21,39 +24,39 @@ public class GenerateMojo extends AbstractMojo {
     @Parameter(property = "migrationsPath")
     private String migrationsPath;
 
-    public void execute(){
-        getLog().info("************************************************************************* " + migrationsPath);
-        EmbeddedPostgres embeddedPostgres = null;
+    @Parameter(property = "outputPath")
+    private File outputPath;
+
+    @Parameter(property = "entities")
+    private List<String> entityPackages;
+
+    @Parameter(defaultValue = "${project}", readonly = true)
+    private MavenProject project;
+
+    @Parameter(defaultValue = "${plugin}", readonly = true)
+    private PluginDescriptor descriptor;
+
+    private URL mapPathToURL(String path) {
         try {
-            embeddedPostgres = EmbeddedPostgres.builder()
-                    .setPort(EMBEDDED_POSTGRES_PORT).start();
-            DataSource dataSource = embeddedPostgres.getPostgresDatabase();
-            getLog().info(dataSource.getConnection().getMetaData().getURL());
+            return Paths.get(path).toUri().toURL();
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
-            Flyway flyway = new Flyway();
-            flyway.setDataSource(dataSource.getConnection().getMetaData().getURL(), "postgres", "postgres");
-            flyway.setLocations("filesystem:" + migrationsPath);
-            flyway.migrate();
+    public void execute(){
 
-            final Statement statement = flyway.getConfiguration().getDataSource().getConnection().createStatement();
+        List<String> compileSourceRoots = project.getCompileSourceRoots();
+        compileSourceRoots.stream().map(this::mapPathToURL).forEach(url -> descriptor.getClassRealm().addURL(url));
 
-            statement.execute("insert into sports values (1, 'sport1')");
-            statement.execute("insert into champs values (1, 1, 'champ1')");
-            statement.execute("select * from champs");
-
-            getLog().info("@@@ " + statement.getResultSet().next() + " " + statement.getResultSet().getString("name"));
-
-        } catch (IOException | SQLException e) {
-            e.printStackTrace();
+        try {
+            project.getCompileClasspathElements().stream().map(this::mapPathToURL).forEach(url -> descriptor.getClassRealm().addURL(url));
+        } catch (DependencyResolutionRequiredException e) {
+            throw new IllegalStateException(e);
         }
 
+        SchemaUpdater schemaUpdater = new SchemaUpdater();
+        schemaUpdater.updateSchema(new SchemaSettings(migrationsPath, outputPath, entityPackages, new HashMap<>()));
     }
 
-    public String getMigrationsPath() {
-        return migrationsPath;
-    }
-
-    public void setMigrationsPath(String migrationsPath) {
-        this.migrationsPath = migrationsPath;
-    }
 }

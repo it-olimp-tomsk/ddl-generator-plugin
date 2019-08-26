@@ -6,12 +6,15 @@
 
     <groupId>com.betolimp.plugins</groupId>
     <artifactId>plugins-root</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <properties>
 
-    </properties>
+        <properties>
+            <maven.compiler.source>1.6</maven.compiler.source>
+            <maven.compiler.target>1.6</maven.compiler.target>
+        </properties>
+
     <modules>
             <module>ddl-generator</module>
         <module>sample</module>
@@ -35,11 +38,41 @@
         </dependencies>
     </dependencyManagement>
 
+    <distributionManagement>
+
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <url>https://nexus.it-olimp-tomsk.com/repository/africa-snapshots/</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>nexus-snapshots</id>
+            <url>https://nexus.it-olimp-tomsk.com/repository/africa-releases/</url>
+        </repository>
+
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>nexus-snapshots</id>
+            <url>https://nexus.it-olimp-tomsk.com/repository/africa-read-only/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+    </repositories>
 
     <build>
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
             <plugins>
-
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
