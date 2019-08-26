@@ -7,9 +7,10 @@
     <parent>
         <groupId>com.betolimp.plugins</groupId>
         <artifactId>plugins-root</artifactId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ddl-generator</artifactId>
@@ -21,9 +22,15 @@
         <dependencies>
 
             <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>0.9.11</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-core</artifactId>
-                <version>5.4.1.Final</version>
+                <version>5.4.4.Final</version>
             </dependency>
 
             <dependency>
@@ -33,14 +40,17 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-plugin-api</artifactId>
-            </dependency>
-
-            <!-- dependencies to annotations -->
-            <dependency>
                 <groupId>org.apache.maven.plugin-tools</groupId>
                 <artifactId>maven-plugin-annotations</artifactId>
+                <version>3.6.0</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-core</artifactId>
+                <version>3.6.1</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -48,6 +58,7 @@
                 <artifactId>flyway-core</artifactId>
                 <version>5.2.4</version>
             </dependency>
+
             <dependency>
                 <groupId>com.opentable.components</groupId>
                 <artifactId>otj-pg-embedded</artifactId>
@@ -59,20 +70,28 @@
 
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
                 <version>3.6.0</version>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
-                    <source>7</source>
-                    <target>7</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
-            <!-- other plugins -->
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+
         </plugins>
     </build>
 </project>

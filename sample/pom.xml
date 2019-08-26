@@ -5,33 +5,35 @@
     <parent>
         <artifactId>plugins-root</artifactId>
         <groupId>com.betolimp.plugins</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>sample</artifactId>
     <properties>
         <migrationsPath>${basedir}/src/main/resources/db/migration/</migrationsPath>
+        <outputPath>${basedir}/src/main/resources/db/migration/</outputPath>
+        <entitiesPath>com.betolimp.sample.entity</entitiesPath>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>5.4.1.Final</version>
+            <version>5.4.4.Final</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-
-        <plugin>
-            <groupId>com.betolimp.plugins</groupId>
-            <artifactId>ddl-generator</artifactId>
-            <version>1.1-SNAPSHOT</version>
-            <configuration>
-                <migrationsPath>${migrationsPath}</migrationsPath>
-            </configuration>
-        </plugin>
-
+            <plugin>
+                <groupId>com.betolimp.plugins</groupId>
+                <artifactId>ddl-generator</artifactId>
+                <version>1.4-SNAPSHOT</version>
+                <configuration>
+                    <migrationsPath>${migrationsPath}</migrationsPath>
+                    <outputPath>${outputPath}</outputPath>
+                    <entityPackages>com.betolimp.sample.model</entityPackages>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
