@@ -38,23 +38,10 @@
         </dependencies>
     </dependencyManagement>
 
-    <distributionManagement>
-
-        <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <url>https://nexus.it-olimp-tomsk.com/repository/africa-snapshots/</url>
-        </snapshotRepository>
-
-        <repository>
-            <id>nexus-snapshots</id>
-            <url>https://nexus.it-olimp-tomsk.com/repository/africa-releases/</url>
-        </repository>
-
-    </distributionManagement>
-
     <repositories>
+
         <repository>
-            <id>nexus-snapshots</id>
+            <id>olimp-africa-read-only</id>
             <url>https://nexus.it-olimp-tomsk.com/repository/africa-read-only/</url>
             <snapshots>
                 <enabled>true</enabled>
@@ -63,7 +50,22 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
+
     </repositories>
+
+    <distributionManagement>
+
+        <snapshotRepository>
+            <id>olimp-africa-snapshots</id>
+            <url>https://nexus.it-olimp-tomsk.com/repository/africa-snapshots/</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>olimp-africa-releases</id>
+            <url>https://nexus.it-olimp-tomsk.com/repository/africa-releases/</url>
+        </repository>
+
+    </distributionManagement>
 
     <build>
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
